@@ -4,7 +4,7 @@ function getResend() {
   return new Resend(process.env.RESEND_API_KEY!);
 }
 
-const FROM = "Proposals <proposals@yourdomain.com>";
+const FROM = "ProposalAI <onboarding@resend.dev>";
 
 function isMocked() {
   return process.env.MOCK_EMAIL === "true";
