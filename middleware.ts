@@ -31,8 +31,8 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Protect dashboard routes
-  if (pathname.startsWith("/dashboard") || pathname.startsWith("/proposals")) {
+  // Protect dashboard and admin routes
+  if (pathname.startsWith("/dashboard") || pathname.startsWith("/proposals") || pathname.startsWith("/admin")) {
     if (!user) {
       const url = request.nextUrl.clone();
       url.pathname = "/login";

@@ -1,31 +1,27 @@
 import { redirect } from "next/navigation";
 import { createServerClient, createServiceClient } from "@/lib/supabase/server";
-import { Sidebar } from "@/components/dashboard/Sidebar";
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
 
-export default async function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) redirect("/login");
 
-  const service = await createServiceClient();
-  const { data: profile } = await service
+  const serviceClient = await createServiceClient();
+  const { data: profile } = await serviceClient
     .from("profiles")
     .select("role")
     .eq("id", user.id)
     .single();
 
-  const isAdmin = profile?.role === "admin";
+  if (!profile || profile.role !== "admin") redirect("/dashboard");
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
-      <Sidebar userEmail={user.email ?? ""} isAdmin={isAdmin} />
+      <AdminSidebar userEmail={user.email ?? ""} />
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-5xl mx-auto px-8 py-8">
+        <div className="max-w-6xl mx-auto px-8 py-8">
           {children}
         </div>
       </main>

@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { LayoutDashboard, Sparkles, FileText } from "lucide-react";
+import { LayoutDashboard, Sparkles, FileText, Shield } from "lucide-react";
 import { SignOutButton } from "./SignOutButton";
 
 interface SidebarProps {
   userEmail: string;
+  isAdmin?: boolean;
 }
 
 const NAV = [
@@ -11,7 +12,7 @@ const NAV = [
   { href: "/proposals/new", icon: Sparkles, label: "New Proposal" },
 ];
 
-export function Sidebar({ userEmail }: SidebarProps) {
+export function Sidebar({ userEmail, isAdmin }: SidebarProps) {
   const username = userEmail.split("@")[0];
   const initials = username.slice(0, 2).toUpperCase();
 
@@ -45,6 +46,21 @@ export function Sidebar({ userEmail }: SidebarProps) {
             {label}
           </Link>
         ))}
+
+        {isAdmin && (
+          <div className="pt-4 mt-2">
+            <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-slate-600">
+              Administration
+            </p>
+            <Link
+              href="/admin"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors group"
+            >
+              <Shield className="w-4 h-4 shrink-0 group-hover:text-rose-400 transition-colors" />
+              Admin Panel
+            </Link>
+          </div>
+        )}
       </nav>
 
       {/* User */}
