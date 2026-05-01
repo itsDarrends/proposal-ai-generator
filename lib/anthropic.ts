@@ -81,21 +81,32 @@ ${params.description}`;
       lastError = null;
       break;
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      if (msg.includes("API_KEY") || msg.includes("API key") || msg.includes("authentication")) {
+      const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
+      console.error(`[Gemini ${modelName}] error:`, err instanceof Error ? err.message : err);
+
+      const isAuthError = msg.includes("api_key") || msg.includes("api key") || msg.includes("authentication") || msg.includes("permission") || msg.includes("403");
+      if (isAuthError) {
         throw new Error("Invalid Google AI API key. Check your GOOGLE_AI_API_KEY environment variable.");
       }
-      if (msg.includes("quota") || msg.includes("rate limit") || msg.includes("RESOURCE_EXHAUSTED")) {
+
+      const isQuotaError = msg.includes("quota") || msg.includes("rate limit") || msg.includes("resource_exhausted") || msg.includes("429") || msg.includes("too many");
+      if (isQuotaError) {
         lastError = new Error(`quota:${modelName}`);
         continue;
       }
-      throw new Error("AI generation failed. Please try again.");
+
+      // For any other error (503, timeout, network, etc.) — try next model
+      lastError = new Error(err instanceof Error ? err.message : "Unknown error");
+      continue;
     }
   }
 
   if (lastError) {
+    const isQuota = lastError.message.startsWith("quota:");
     throw new Error(
-      "All AI models are currently at capacity. This is a free-tier limit — wait a few minutes and try again, or check your quota at aistudio.google.com."
+      isQuota
+        ? "Google AI quota reached on all models. Wait a few minutes and try again, or check aistudio.google.com for your usage."
+        : `AI generation failed: ${lastError.message}`
     );
   }
 
