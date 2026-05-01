@@ -65,24 +65,38 @@ Investment Amount: $${params.amount.toLocaleString()}
 Project Description:
 ${params.description}`;
 
-  let text: string;
-  try {
-    const model = getGemini().getGenerativeModel({
-      model: "gemini-2.0-flash",
-      systemInstruction: SYSTEM_PROMPT,
-    });
+  const MODELS = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-8b"];
 
-    const result = await model.generateContent(userMessage);
-    text = result.response.text();
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    if (msg.includes("API_KEY") || msg.includes("API key") || msg.includes("authentication")) {
-      throw new Error("Invalid Google AI API key. Check your GOOGLE_AI_API_KEY environment variable.");
+  let text: string = "";
+  let lastError: Error | null = null;
+
+  for (const modelName of MODELS) {
+    try {
+      const model = getGemini().getGenerativeModel({
+        model: modelName,
+        systemInstruction: SYSTEM_PROMPT,
+      });
+      const result = await model.generateContent(userMessage);
+      text = result.response.text();
+      lastError = null;
+      break;
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes("API_KEY") || msg.includes("API key") || msg.includes("authentication")) {
+        throw new Error("Invalid Google AI API key. Check your GOOGLE_AI_API_KEY environment variable.");
+      }
+      if (msg.includes("quota") || msg.includes("rate limit") || msg.includes("RESOURCE_EXHAUSTED")) {
+        lastError = new Error(`quota:${modelName}`);
+        continue;
+      }
+      throw new Error("AI generation failed. Please try again.");
     }
-    if (msg.includes("quota") || msg.includes("rate limit") || msg.includes("RESOURCE_EXHAUSTED")) {
-      throw new Error("Google AI free tier quota reached. Try again in a minute.");
-    }
-    throw new Error("AI generation failed. Please try again.");
+  }
+
+  if (lastError) {
+    throw new Error(
+      "All AI models are currently at capacity. This is a free-tier limit — wait a few minutes and try again, or check your quota at aistudio.google.com."
+    );
   }
 
   if (!text?.trim()) {
