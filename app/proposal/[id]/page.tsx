@@ -28,14 +28,20 @@ export default async function ProposalPage({ params }: Props) {
     notFound();
   }
 
-  // Track first view via API route (fire and forget)
-  if (!proposal.viewed_at) {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
-    fetch(`${appUrl}/api/proposals/${id}/view`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-    }).catch(() => {});
-  }
+  // Track view count on every visit (fire and forget)
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+  fetch(`${appUrl}/api/proposals/${id}/view`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  }).catch(() => {});
+
+  // Fetch creator branding
+  const { data: rawProfile } = await supabase
+    .from("profiles")
+    .select("company_name, company_logo_url, brand_color")
+    .eq("id", proposal.user_id)
+    .single();
+  const profile = rawProfile as { company_name: string | null; company_logo_url: string | null; brand_color: string | null } | null;
 
   const expired = isExpired(proposal.expires_at) &&
     proposal.status !== "signed" &&
@@ -57,7 +63,6 @@ export default async function ProposalPage({ params }: Props) {
     );
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
   const mockPayment = process.env.MOCK_PAYMENT === "true";
 
   return (
@@ -70,6 +75,9 @@ export default async function ProposalPage({ params }: Props) {
           amount={proposal.amount}
           createdAt={proposal.created_at}
           expiresAt={proposal.expires_at}
+          companyName={profile?.company_name ?? null}
+          companyLogoUrl={profile?.company_logo_url ?? null}
+          brandColor={profile?.brand_color ?? null}
         />
 
         <ProposalClientShell

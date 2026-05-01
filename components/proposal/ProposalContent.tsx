@@ -9,6 +9,9 @@ interface ProposalContentProps {
   amount: number;
   createdAt: string;
   expiresAt: string | null;
+  companyName?: string | null;
+  companyLogoUrl?: string | null;
+  brandColor?: string | null;
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -37,12 +40,28 @@ export function ProposalContent({
   amount,
   createdAt,
   expiresAt,
+  companyName,
+  companyLogoUrl,
+  brandColor,
 }: ProposalContentProps) {
+  const accent = brandColor ?? "#4f46e5";
+
   return (
     <article className="max-w-3xl mx-auto">
       {/* Header */}
-      <div className="mb-12 pb-8 border-b-2 border-gray-900">
-        <p className="text-sm text-gray-500 mb-2 uppercase tracking-widest font-medium">
+      <div className="mb-12 pb-8 border-b-2" style={{ borderColor: accent }}>
+        {(companyLogoUrl || companyName) && (
+          <div className="flex items-center gap-3 mb-6">
+            {companyLogoUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={companyLogoUrl} alt={companyName ?? "Company logo"} className="h-10 w-auto object-contain" />
+            )}
+            {companyName && (
+              <span className="text-lg font-semibold text-gray-800">{companyName}</span>
+            )}
+          </div>
+        )}
+        <p className="text-sm mb-2 uppercase tracking-widest font-medium" style={{ color: accent }}>
           Business Proposal
         </p>
         <h1 className="text-4xl font-bold text-gray-900 mb-4">{title}</h1>
@@ -89,11 +108,11 @@ export function ProposalContent({
       </Section>
 
       <Section title="Investment">
-        <div className="bg-blue-50 border border-blue-100 rounded-lg p-6 mb-4">
-          <div className="text-3xl font-bold text-blue-700 mb-1">
+        <div className="rounded-lg p-6 mb-4" style={{ backgroundColor: `${accent}12`, border: `1px solid ${accent}30` }}>
+          <div className="text-3xl font-bold mb-1" style={{ color: accent }}>
             {formatCurrency(amount)}
           </div>
-          <p className="text-sm text-blue-600">Total project investment</p>
+          <p className="text-sm" style={{ color: `${accent}cc` }}>Total project investment</p>
         </div>
         <Prose text={content.investment} />
       </Section>

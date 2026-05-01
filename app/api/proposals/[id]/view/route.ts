@@ -23,17 +23,23 @@ export async function POST(request: Request, { params }: Params) {
 
   const proposal = rawProposal as Proposal | null;
 
-  if (!proposal || proposal.viewed_at) {
+  if (!proposal) {
     return NextResponse.json({ ok: true });
+  }
+
+  const updatePayload: Record<string, unknown> = {
+    view_count: (proposal.view_count ?? 0) + 1,
+    updated_at: new Date().toISOString(),
+  };
+
+  if (!proposal.viewed_at) {
+    updatePayload.viewed_at = new Date().toISOString();
+    updatePayload.status = proposal.status === "sent" ? "viewed" : proposal.status;
   }
 
   // eslint-disable-next-line
   await (supabase.from("proposals") as any)
-    .update({
-      viewed_at: new Date().toISOString(),
-      status: proposal.status === "sent" ? "viewed" : proposal.status,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updatePayload)
     .eq("id", id);
 
   const { data: rawCreator } = await supabase

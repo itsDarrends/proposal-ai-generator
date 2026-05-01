@@ -21,18 +21,30 @@ export interface Database {
           full_name: string | null;
           email: string;
           created_at: string;
+          role: string | null;
+          company_name: string | null;
+          company_logo_url: string | null;
+          brand_color: string | null;
         };
         Insert: {
           id: string;
           full_name?: string | null;
           email: string;
           created_at?: string;
+          role?: string | null;
+          company_name?: string | null;
+          company_logo_url?: string | null;
+          brand_color?: string | null;
         };
         Update: {
           id?: string;
           full_name?: string | null;
           email?: string;
           created_at?: string;
+          role?: string | null;
+          company_name?: string | null;
+          company_logo_url?: string | null;
+          brand_color?: string | null;
         };
       };
       proposals: {
@@ -53,6 +65,7 @@ export interface Database {
           paid_at: string | null;
           created_at: string;
           updated_at: string;
+          view_count: number;
         };
         Insert: {
           id?: string;
@@ -71,6 +84,7 @@ export interface Database {
           paid_at?: string | null;
           created_at?: string;
           updated_at?: string;
+          view_count?: number;
         };
         Update: {
           id?: string;
@@ -89,6 +103,7 @@ export interface Database {
           paid_at?: string | null;
           created_at?: string;
           updated_at?: string;
+          view_count?: number;
         };
       };
     };

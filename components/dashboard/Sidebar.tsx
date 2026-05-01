@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LayoutDashboard, Sparkles, FileText, Shield } from "lucide-react";
+import { LayoutDashboard, Sparkles, FileText, Shield, Settings } from "lucide-react";
 import { SignOutButton } from "./SignOutButton";
 
 interface SidebarProps {
@@ -10,6 +10,7 @@ interface SidebarProps {
 const NAV = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/proposals/new", icon: Sparkles, label: "New Proposal" },
+  { href: "/settings", icon: Settings, label: "Settings" },
 ];
 
 export function Sidebar({ userEmail, isAdmin }: SidebarProps) {
