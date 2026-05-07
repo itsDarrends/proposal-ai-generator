@@ -1,10 +1,10 @@
 # ProposalAI
 
-An AI-powered proposal generation platform. Describe your project in plain text and Claude writes a full, professional proposal — complete with digital signature, Stripe payment, and PDF download.
+An AI-powered proposal generation platform. Describe your project in plain text and Gemini writes a full, professional proposal — complete with digital signature, Stripe payment, and PDF download.
 
 ## Features
 
-- **AI generation** — Claude writes a structured 9-section proposal from a short description
+- **AI generation** — Gemini writes a structured 9-section proposal from a short description
 - **Public proposal URL** — shareable link with no login required for the client
 - **Canvas signature** — client signs directly in the browser
 - **Stripe Checkout** — one-time payment collected immediately after signing
@@ -19,7 +19,7 @@ An AI-powered proposal generation platform. Describe your project in plain text 
 |---|---|
 | Framework | Next.js 14 App Router + TypeScript |
 | Auth + DB | Supabase (Auth + Postgres + RLS) |
-| AI | Claude `claude-opus-4-7` via Anthropic SDK |
+| AI | Google Gemini via `@google/generative-ai` |
 | Payments | Stripe Checkout |
 | Email | Resend |
 | PDF | `@react-pdf/renderer` |
@@ -34,7 +34,7 @@ An AI-powered proposal generation platform. Describe your project in plain text 
 
 - Node.js 18+
 - A [Supabase](https://supabase.com) project
-- An [Anthropic](https://console.anthropic.com) API key
+- A [Google AI Studio](https://aistudio.google.com) API key (free tier)
 - A [Stripe](https://dashboard.stripe.com) account
 - A [Resend](https://resend.com) account
 
@@ -58,7 +58,7 @@ Fill in all values in `.env.local`:
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
-ANTHROPIC_API_KEY=
+GOOGLE_AI_API_KEY=
 STRIPE_SECRET_KEY=
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 STRIPE_WEBHOOK_SECRET=
@@ -90,7 +90,7 @@ Open [http://localhost:3000](http://localhost:3000).
 To develop without spending API credits, add these to `.env.local`:
 
 ```env
-MOCK_AI=true        # Returns a pre-written proposal instead of calling Claude
+MOCK_AI=true        # Returns a pre-written proposal instead of calling Gemini
 MOCK_PAYMENT=true   # Simulates Stripe payment without the CLI or real card
 MOCK_EMAIL=true     # Logs emails to console instead of sending via Resend
 ```
@@ -129,7 +129,7 @@ app/
 │   └── proposals/new/      # AI generation form
 ├── proposal/[id]/          # Public client-facing proposal page
 └── api/
-    ├── proposals/generate/ # POST: call Claude, save to DB
+    ├── proposals/generate/ # POST: call Gemini, save to DB
     ├── proposals/[id]/sign # POST: save canvas signature
     ├── proposals/[id]/view # POST: mark as viewed
     ├── proposals/[id]/pdf  # GET: stream PDF download
