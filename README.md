@@ -1,150 +1,105 @@
-# ProposalAI
+# ProposalAI – AI-Powered Proposal Generator
 
-An AI-powered proposal generation platform. Describe your project in plain text and Gemini writes a full, professional proposal — complete with digital signature, Stripe payment, and PDF download.
+Generate professional business proposals in seconds using Google Gemini AI. Built with Next.js 14, Supabase, and Stripe for payments.
 
-## Features
+## 🎯 Features
 
-- **AI generation** — Gemini writes a structured 9-section proposal from a short description
-- **Public proposal URL** — shareable link with no login required for the client
-- **Canvas signature** — client signs directly in the browser
-- **Stripe Checkout** — one-time payment collected immediately after signing
-- **PDF download** — signed proposal rendered to PDF via `@react-pdf/renderer`
-- **Status tracking** — `draft → sent → viewed → signed → paid` pipeline on the dashboard
-- **Email notifications** — creator notified on view, sign, and payment via Resend
-- **Proposal expiry** — configurable expiry date per proposal
+- **AI-Generated Proposals** — Powered by Google Gemini API
+- **Template System** — Pre-built proposal templates
+- **Payment Integration** — Stripe checkout
+- **Email Delivery** — Auto-send via Resend
+- **PDF Export** — Download generated proposals
+- **User Authentication** — Secure Supabase auth
+- **Real-time Preview** — Edit and preview before sending
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-| Concern | Choice |
-|---|---|
-| Framework | Next.js 14 App Router + TypeScript |
-| Auth + DB | Supabase (Auth + Postgres + RLS) |
-| AI | Google Gemini via `@google/generative-ai` |
-| Payments | Stripe Checkout |
-| Email | Resend |
-| PDF | `@react-pdf/renderer` |
-| Signature | `react-signature-canvas` |
-| Animations | Framer Motion + `canvas-confetti` |
-| Styling | Tailwind CSS + shadcn/ui |
-| Hosting | Netlify (`@netlify/plugin-nextjs`) |
+```
+Frontend: Next.js 14 | React 18 | TypeScript
+Backend: Supabase | Google Gemini API
+Payments: Stripe
+Email: Resend
+Styling: Tailwind CSS | Shadcn/UI
+Deployment: Netlify
+```
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
-
 - Node.js 18+
-- A [Supabase](https://supabase.com) project
-- A [Google AI Studio](https://aistudio.google.com) API key (free tier)
-- A [Stripe](https://dashboard.stripe.com) account
-- A [Resend](https://resend.com) account
+- Supabase account
+- Google Gemini API key
+- Stripe account
+- Resend email account
 
-### Installation
+### Local Setup
 
 ```bash
-git clone https://github.com/itsDarrends/project-proposal-ai.git
-cd project-proposal-ai
+# Clone repository
+git clone https://github.com/itsDarrends/proposal-ai-generator.git
+cd proposal-ai-generator
+
+# Install dependencies
 npm install
-```
 
-### Environment Variables
+# Configure environment
+cat > .env.local << EOL
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+GOOGLE_GEMINI_API_KEY=your_gemini_key
+STRIPE_PUBLIC_KEY=your_stripe_key
+STRIPE_SECRET_KEY=your_stripe_secret
+RESEND_API_KEY=your_resend_key
+EOL
 
-```bash
-cp .env.local.example .env.local
-```
-
-Fill in all values in `.env.local`:
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-GOOGLE_AI_API_KEY=
-STRIPE_SECRET_KEY=
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
-STRIPE_WEBHOOK_SECRET=
-RESEND_API_KEY=
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-```
-
-### Database Setup
-
-Run the migration in your Supabase SQL editor:
-
-```bash
-# Copy and run the contents of:
-supabase/migrations/001_initial.sql
-```
-
-This creates the `profiles` and `proposals` tables, RLS policies, and an auto-create profile trigger on signup.
-
-### Run Locally
-
-```bash
+# Run development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Frontend runs on `http://localhost:3000`
 
-## Local Development (Mock Modes)
+## 📊 Workflow
 
-To develop without spending API credits, add these to `.env.local`:
+1. **User logs in** via Supabase auth
+2. **Fills proposal details** (client info, services, terms)
+3. **AI generates draft** using Gemini
+4. **Reviews and edits** in real-time
+5. **Proceeds to payment** via Stripe
+6. **Proposal sent** via Resend email
+7. **PDF saved** to Supabase storage
 
-```env
-MOCK_AI=true        # Returns a pre-written proposal instead of calling Gemini
-MOCK_PAYMENT=true   # Simulates Stripe payment without the CLI or real card
-MOCK_EMAIL=true     # Logs emails to console instead of sending via Resend
-```
+## 💳 Payment Flow
 
-All three can be used independently or together.
+- Stripe checkout for premium features
+- Per-proposal pricing model
+- Webhook handling for payment confirmation
+- Invoice generation and storage
 
-## Stripe Webhook (Production)
+## 🔐 Security
 
-1. In Stripe Dashboard, create a webhook pointing to `https://yourdomain.com/api/stripe/webhook`
-2. Select the `checkout.session.completed` event
-3. Copy the signing secret to `STRIPE_WEBHOOK_SECRET`
+- **Supabase Auth:** Row-level security
+- **API Keys:** Stored securely in env
+- **Stripe Security:** PCI-DSS compliant
+- **Email Verification:** Resend auth
 
-For local testing:
+## 🌐 Deployment
 
-```bash
-stripe listen --forward-to localhost:3000/api/stripe/webhook
-```
-
-## Deployment (Netlify)
-
-The project includes a `netlify.toml` configured for `@netlify/plugin-nextjs`.
-
-1. Push to GitHub
-2. Connect the repo in Netlify
-3. Set all environment variables under **Site Settings → Environment Variables**
-4. Set `NEXT_PUBLIC_APP_URL` to your production Netlify URL
-5. Deploy
-
-## Project Structure
-
-```
-app/
-├── (auth)/login/           # Email + password sign-in / sign-up
-├── (dashboard)/            # Auth-guarded creator area
-│   ├── dashboard/          # Proposal list + stats
-│   └── proposals/new/      # AI generation form
-├── proposal/[id]/          # Public client-facing proposal page
-└── api/
-    ├── proposals/generate/ # POST: call Gemini, save to DB
-    ├── proposals/[id]/sign # POST: save canvas signature
-    ├── proposals/[id]/view # POST: mark as viewed
-    ├── proposals/[id]/pdf  # GET: stream PDF download
-    └── stripe/
-        ├── checkout/       # POST: create Stripe session
-        └── webhook/        # POST: handle payment confirmation
-```
-
-## Scripts
+### Netlify
 
 ```bash
-node scripts/seed-proposal.mjs   # Create a demo proposal in the DB
-node scripts/set-password.mjs    # Set password for an existing Supabase user
+# Connect repo to Netlify
+# Set environment variables in Netlify dashboard
+# Auto-deploy on push to main
 ```
 
-## License
+## 📝 License
 
-MIT
+MIT License
+
+## 💬 Contact
+
+[itsdarrendsilva@gmail.com](mailto:itsdarrendsilva@gmail.com)
+
+---
+
+*Generate proposals, close deals faster* 📄✨
