@@ -182,8 +182,14 @@ export default function NewProposalPage() {
         }),
       });
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error ?? "Failed to generate proposal");
+        // Netlify returns an HTML page (not JSON) when the function times out
+        const data = await res.json().catch(() => ({}));
+        throw new Error(
+          data.error ??
+            (res.status === 502 || res.status === 504
+              ? "Generation timed out. Please try again."
+              : "Failed to generate proposal")
+        );
       }
       toast.success("Proposal generated! Copy the link to share with your client.");
       router.push("/dashboard");

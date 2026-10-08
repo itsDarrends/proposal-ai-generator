@@ -65,18 +65,27 @@ Investment Amount: $${params.amount.toLocaleString()}
 Project Description:
 ${params.description}`;
 
-  // "-latest" aliases track Google's current models, so retirements don't break generation
-  const MODELS = ["gemini-flash-latest", "gemini-3.5-flash", "gemini-flash-lite-latest"];
+  // Netlify kills functions after ~10s, so only fast non-"thinking" lite models fit (~6s).
+  // "-latest" alias tracks Google's current model, so retirements don't break generation.
+  const MODELS = ["gemini-flash-lite-latest", "gemini-3.1-flash-lite"];
+  const deadline = Date.now() + 8500;
 
   let text: string = "";
   let quotaHit = false;
+  let timedOut = false;
 
   for (const modelName of MODELS) {
+    const remaining = deadline - Date.now();
+    if (remaining < 3000) break;
     try {
-      const model = getGemini().getGenerativeModel({
-        model: modelName,
-        systemInstruction: SYSTEM_PROMPT,
-      });
+      const model = getGemini().getGenerativeModel(
+        {
+          model: modelName,
+          systemInstruction: SYSTEM_PROMPT,
+          generationConfig: { responseMimeType: "application/json" },
+        },
+        { timeout: remaining }
+      );
       const result = await model.generateContent(userMessage);
       text = result.response.text();
       break;
@@ -92,6 +101,10 @@ ${params.description}`;
         quotaHit = true;
       }
 
+      if (msg.includes("abort") || msg.includes("timeout") || msg.includes("timed out")) {
+        timedOut = true;
+      }
+
       // 404 = model not available for this key — skip silently
       // All other errors — try next model
     }
@@ -101,6 +114,8 @@ ${params.description}`;
     throw new Error(
       quotaHit
         ? "Your Google AI free-tier quota is exhausted for today. It resets at midnight Pacific time. Check your usage at aistudio.google.com."
+        : timedOut
+        ? "The AI took too long to respond. Please try again — shorter descriptions generate faster."
         : "AI generation failed. Please try again in a moment."
     );
   }
