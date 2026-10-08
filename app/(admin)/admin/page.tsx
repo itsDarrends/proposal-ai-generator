@@ -12,8 +12,7 @@ interface StatCardProps {
 
 function StatCard({ label, value, sub, icon, gradient }: StatCardProps) {
   return (
-    <div className={`rounded-2xl p-6 ${gradient} relative overflow-hidden`}>
-      <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(ellipse_at_top_right,_white_0%,_transparent_60%)]" />
+    <div className={`rounded-lg p-6 ${gradient} relative overflow-hidden`}>
       <div className="relative flex items-start justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-white opacity-80 mb-3">{label}</p>
@@ -70,28 +69,28 @@ export default async function AdminPage() {
           label="Total Users"
           value={String(totalUsers ?? 0)}
           sub="registered accounts"
-          gradient="bg-gradient-to-br from-indigo-500 to-violet-600"
+          gradient="bg-slate-700"
           icon={<Users className="w-5 h-5 text-white" />}
         />
         <StatCard
           label="Total Proposals"
           value={String(totalProposals ?? 0)}
           sub="across all users"
-          gradient="bg-gradient-to-br from-blue-500 to-indigo-600"
+          gradient="bg-purple-700"
           icon={<FileText className="w-5 h-5 text-white" />}
         />
         <StatCard
           label="Total Revenue"
           value={formatCurrency(totalRevenue)}
           sub={`${paidCount} paid proposals`}
-          gradient="bg-gradient-to-br from-emerald-500 to-teal-600"
+          gradient="bg-indigo-700"
           icon={<DollarSign className="w-5 h-5 text-white" />}
         />
         <StatCard
           label="Platform Win Rate"
           value={totalProposals === 0 ? "—" : `${winRate}%`}
           sub="paid vs total"
-          gradient="bg-gradient-to-br from-slate-700 to-slate-900"
+          gradient="bg-purple-700"
           icon={<TrendingUp className="w-5 h-5 text-white" />}
         />
       </div>
@@ -100,7 +99,7 @@ export default async function AdminPage() {
         <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-4">
           Recent Proposals
         </h2>
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-lg border border-slate-100 shadow-sm overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-50">

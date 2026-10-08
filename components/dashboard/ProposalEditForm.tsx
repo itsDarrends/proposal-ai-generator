@@ -64,7 +64,7 @@ export function ProposalEditForm({ proposal }: ProposalEditFormProps) {
             value={content[key]}
             onChange={e => update(key, e.target.value)}
             rows={rows}
-            className="w-full px-5 py-4 text-sm text-slate-700 leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-300 placeholder:text-slate-300"
+            className="w-full px-5 py-4 text-sm text-slate-700 leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-300 placeholder:text-slate-700"
             placeholder={`Enter ${label.toLowerCase()}...`}
           />
         </div>

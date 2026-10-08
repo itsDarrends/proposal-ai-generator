@@ -53,14 +53,14 @@ export default function AdminUsersPage() {
         <p className="text-sm text-slate-500 mt-1">{users.length} registered accounts</p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-lg border border-slate-100 shadow-sm overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-24">
-            <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+            <Loader2 className="w-6 h-6 animate-spin text-slate-600" />
           </div>
         ) : users.length === 0 ? (
           <div className="text-center py-24">
-            <Users className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+            <Users className="w-10 h-10 text-slate-700 mx-auto mb-3" />
             <p className="text-slate-500 text-sm">No users yet</p>
           </div>
         ) : (
@@ -86,12 +86,12 @@ export default function AdminUsersPage() {
                   <tr key={u.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${isAdmin ? "bg-gradient-to-br from-rose-500 to-pink-600" : "bg-gradient-to-br from-indigo-500 to-violet-600"}`}>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${isAdmin ? "bg-rose-500" : "bg-indigo-500"}`}>
                           {initials}
                         </div>
                         <div>
                           <p className="font-medium text-slate-900">{username}</p>
-                          <p className="text-slate-400 text-xs">{u.email}</p>
+                          <p className="text-slate-600 text-xs">{u.email}</p>
                         </div>
                       </div>
                     </td>
@@ -112,7 +112,7 @@ export default function AdminUsersPage() {
                     </td>
                     <td className="px-5 py-4">
                       {isAdmin ? (
-                        <span className="text-xs text-slate-400">—</span>
+                        <span className="text-xs text-slate-600">—</span>
                       ) : (
                         <div className="flex items-center gap-1">
                           {u.banned ? (

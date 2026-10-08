@@ -53,21 +53,20 @@ export function SignatureStep({ proposalId, onSigned }: SignatureStepProps) {
   }
 
   return (
-    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 mt-10 shadow-2xl relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent pointer-events-none" />
+    <div className="bg-slate-50 border border-slate-200 rounded-lg p-8 mt-10 shadow-sm relative overflow-hidden">
       
       <div className="relative z-10">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
-            <PenLine className="w-5 h-5 text-indigo-400" />
+            <PenLine className="w-5 h-5 text-indigo-700" />
           </div>
-          <h3 className="text-xl font-bold text-white">Sign This Proposal</h3>
+          <h3 className="text-xl font-bold text-slate-900">Sign This Proposal</h3>
         </div>
-        <p className="text-[15px] text-slate-400 mb-6">
+        <p className="text-[15px] text-slate-600 mb-6">
           By signing below, you agree to the terms and conditions outlined in this proposal.
         </p>
 
-        <div className="border border-dashed border-white/20 rounded-2xl overflow-hidden bg-black/40 mb-5 relative group transition-colors hover:border-indigo-500/50">
+        <div className="border border-dashed border-slate-200 rounded-lg overflow-hidden bg-slate-50 mb-5 relative group transition-colors hover:border-indigo-500/50">
           <SignatureCanvas
             ref={sigRef}
             canvasProps={{
@@ -76,7 +75,7 @@ export function SignatureStep({ proposalId, onSigned }: SignatureStepProps) {
               style: { touchAction: "none" },
             }}
             onEnd={() => setIsEmpty(false)}
-            penColor="#ffffff"
+            penColor="#111111"
             backgroundColor="rgba(0,0,0,0)"
           />
           {isEmpty && (
@@ -87,11 +86,11 @@ export function SignatureStep({ proposalId, onSigned }: SignatureStepProps) {
         </div>
 
         <div className="flex items-center justify-between">
-          <Button variant="ghost" size="sm" onClick={clear} disabled={isEmpty || loading} className="text-slate-400 hover:text-white hover:bg-white/10 rounded-xl h-12 px-6">
+          <Button variant="ghost" size="sm" onClick={clear} disabled={isEmpty || loading} className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl h-12 px-6">
             <RotateCcw className="w-4 h-4 mr-2" />
             Clear Signature
           </Button>
-          <Button onClick={submit} disabled={isEmpty || loading} size="lg" className="h-12 px-8 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-[0_0_30px_-5px_rgb(79,70,229,0.5)] border border-indigo-400/20 transition-all hover:shadow-[0_0_40px_-5px_rgb(79,70,229,0.7)] hover:-translate-y-0.5">
+          <Button onClick={submit} disabled={isEmpty || loading} size="lg" className="h-12 px-8 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-sm border border-indigo-400/20 transition-all hover:shadow-sm hover:-translate-y-0.5">
             {loading ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin mr-2" />

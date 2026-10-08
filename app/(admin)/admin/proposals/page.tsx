@@ -27,10 +27,10 @@ export default async function AdminProposalsPage() {
         <p className="text-sm text-slate-500 mt-1">{proposals?.length ?? 0} proposals across all users</p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-lg border border-slate-100 shadow-sm overflow-hidden">
         {!proposals?.length ? (
           <div className="text-center py-24">
-            <FileText className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+            <FileText className="w-10 h-10 text-slate-700 mx-auto mb-3" />
             <p className="text-slate-500 text-sm">No proposals yet</p>
           </div>
         ) : (
@@ -57,7 +57,7 @@ export default async function AdminProposalsPage() {
                   </td>
                   <td className="px-5 py-4">
                     <p className="text-slate-700">{p.client_name}</p>
-                    <p className="text-slate-400 text-xs">{p.client_email}</p>
+                    <p className="text-slate-600 text-xs">{p.client_email}</p>
                   </td>
                   <td className="px-5 py-4 font-semibold text-slate-900 tabular-nums">
                     {formatCurrency(p.amount)}
@@ -75,7 +75,7 @@ export default async function AdminProposalsPage() {
                       href={`${appUrl}/proposal/${p.id}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-slate-400 hover:text-slate-700 transition-colors"
+                      className="text-slate-600 hover:text-slate-700 transition-colors"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>

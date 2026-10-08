@@ -49,14 +49,13 @@ export default async function ProposalPage({ params }: Props) {
 
   if (expired) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4 relative overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="text-center max-w-md bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl relative z-10">
-          <div className="w-16 h-16 rounded-2xl bg-slate-900/50 flex items-center justify-center mx-auto mb-6 border border-white/5">
-            <Clock className="w-8 h-8 text-indigo-400" />
+      <div className="min-h-screen flex items-center justify-center bg-white px-4 relative overflow-hidden">
+        <div className="text-center max-w-md bg-slate-50 border border-slate-200 p-8 rounded-lg shadow-sm relative z-10">
+          <div className="w-16 h-16 rounded-lg bg-slate-50 flex items-center justify-center mx-auto mb-6 border border-slate-200">
+            <Clock className="w-8 h-8 text-indigo-700" />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-3 tracking-tight">Proposal has expired</h1>
-          <p className="text-slate-400 leading-relaxed">
+          <h1 className="text-2xl font-bold text-slate-900 mb-3 tracking-tight">Proposal has expired</h1>
+          <p className="text-slate-600 leading-relaxed">
             This proposal is no longer accepting signatures. Please contact us to receive an updated version.
           </p>
         </div>
@@ -67,11 +66,8 @@ export default async function ProposalPage({ params }: Props) {
   const mockPayment = process.env.MOCK_PAYMENT === "true";
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-300 relative overflow-hidden selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-white text-slate-700 relative overflow-hidden selection:bg-indigo-500/30">
       {/* Background ambient lighting */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-violet-500/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute top-[40%] left-[60%] w-[30%] h-[30%] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
       
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
         <ProposalContent

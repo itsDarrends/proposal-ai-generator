@@ -17,7 +17,7 @@ export function SignOutButton({ iconOnly }: { iconOnly?: boolean }) {
     return (
       <button
         onClick={signOut}
-        className="p-1.5 rounded-md text-slate-500 hover:text-slate-300 hover:bg-slate-700 transition-colors"
+        className="p-1.5 rounded-md text-slate-500 hover:text-slate-700 hover:bg-slate-700 transition-colors"
         title="Sign out"
       >
         <LogOut className="w-3.5 h-3.5" />
@@ -28,7 +28,7 @@ export function SignOutButton({ iconOnly }: { iconOnly?: boolean }) {
   return (
     <button
       onClick={signOut}
-      className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-300 transition-colors"
+      className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
     >
       <LogOut className="w-4 h-4" />
       Sign out

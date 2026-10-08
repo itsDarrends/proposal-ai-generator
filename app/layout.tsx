@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { DM_Sans, Fraunces } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 
-const sans = Plus_Jakarta_Sans({ 
+const sans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
+});
+
+const display = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-display",
 });
 
 export const metadata: Metadata = {
@@ -19,8 +24,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${sans.variable}`}>
-      <body className="font-sans antialiased bg-slate-50 selection:bg-indigo-100 selection:text-indigo-900">
+    <html lang="en" className={`${sans.variable} ${display.variable}`}>
+      <body className="font-sans antialiased bg-white selection:bg-indigo-200 selection:text-slate-900">
         {children}
         <Toaster richColors position="top-right" />
       </body>

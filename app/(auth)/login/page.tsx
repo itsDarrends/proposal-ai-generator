@@ -7,14 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2, FileText, CheckCircle2, Zap, Shield } from "lucide-react";
+import { Loader2, FileText, CheckCircle2, Clock, Shield } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 const FEATURES = [
-  { icon: Zap, text: "AI-generated proposals in seconds" },
-  { icon: CheckCircle2, text: "Digital signatures & instant payment" },
-  { icon: Shield, text: "Real-time status tracking & notifications" },
+  { icon: Clock, text: "A first draft written for you in seconds" },
+  { icon: CheckCircle2, text: "Clients sign and pay on a single page" },
+  { icon: Shield, text: "See when your proposal has been opened" },
 ];
 
 export default function LoginPage() {
@@ -60,29 +60,27 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left panel — dark brand */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 flex-col justify-between p-12 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-indigo-900 flex-col justify-between p-12 relative overflow-hidden">
         {/* Background orbs */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-72 h-72 bg-violet-600/15 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
         {/* Logo */}
         <div className="relative flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/40">
+          <div className="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center">
             <FileText className="w-5 h-5 text-white" />
           </div>
           <div>
             <p className="text-white font-semibold text-lg leading-none">ProposalAI</p>
-            <p className="text-indigo-300 text-xs mt-0.5">Enterprise Proposal Platform</p>
+            <p className="text-indigo-300 text-xs mt-0.5">Write, send, get paid</p>
           </div>
         </div>
 
         {/* Headline */}
         <div className="relative">
           <h2 className="text-4xl font-bold text-white leading-tight mb-6">
-            Close deals faster with AI-powered proposals
+            From brief to signed proposal, minus the paperwork
           </h2>
-          <p className="text-indigo-200 text-base leading-relaxed mb-10">
-            Generate professional proposals in seconds, collect digital signatures, and accept payment — all in one seamless workflow.
+          <p className="text-slate-300 text-base leading-relaxed mb-10">
+            Describe the project, tweak the draft, then send your client one link where they can sign and pay.
           </p>
           <div className="space-y-4">
             {FEATURES.map(({ icon: Icon, text }) => (
@@ -98,7 +96,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <div className="relative">
-          <p className="text-xs text-slate-600">© 2025 ProposalAI. All rights reserved.</p>
+          <p className="text-xs text-slate-600">© 2026 ProposalAI</p>
         </div>
       </div>
 
@@ -158,7 +156,7 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-sm shadow-indigo-200 mt-2"
+              className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white font-medium mt-2"
               disabled={loading}
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}

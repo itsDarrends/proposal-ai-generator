@@ -3,7 +3,7 @@ import { ProposalCard } from "@/components/dashboard/ProposalCard";
 import { StatsBar } from "@/components/dashboard/StatsBar";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Sparkles, FileText } from "lucide-react";
+import { FilePlus, FileText } from "lucide-react";
 import type { Database } from "@/lib/supabase/types";
 import { isExpired } from "@/lib/utils";
 
@@ -43,16 +43,16 @@ export default async function DashboardPage() {
       {/* Page header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Proposals</h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Proposals</h1>
+          <p className="text-sm text-slate-600 mt-1">
             {proposals.length === 0
               ? "No proposals yet — create your first one"
               : `${proposals.length} total · ${paid} paid · ${awaitingAction} awaiting action`}
           </p>
         </div>
-        <Button asChild size="default" className="h-10 px-5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-[0_0_20px_-5px_rgb(79,70,229,0.6)] border border-indigo-400/20 rounded-xl transition-all hover:shadow-[0_0_30px_-5px_rgb(79,70,229,0.8)] hover:-translate-y-0.5">
+        <Button asChild size="default" className="h-10 px-5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-sm border border-indigo-400/20 rounded-xl transition-all hover:shadow-sm hover:-translate-y-0.5">
           <Link href="/proposals/new">
-            <Sparkles className="w-4 h-4" />
+            <FilePlus className="w-4 h-4" />
             New Proposal
           </Link>
         </Button>
@@ -78,17 +78,17 @@ export default async function DashboardPage() {
         </div>
 
         {proposals.length === 0 ? (
-          <div className="text-center py-24 bg-white/5 backdrop-blur-md rounded-3xl border border-dashed border-white/10">
-            <div className="w-16 h-16 bg-indigo-500/10 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-indigo-500/20">
-              <FileText className="w-8 h-8 text-indigo-400" />
+          <div className="text-center py-24 bg-slate-50 rounded-lg border border-dashed border-slate-200">
+            <div className="w-16 h-16 bg-indigo-500/10 rounded-lg flex items-center justify-center mx-auto mb-5 border border-indigo-500/20">
+              <FileText className="w-8 h-8 text-indigo-700" />
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">No proposals yet</h3>
-            <p className="text-slate-400 text-sm mb-8 max-w-xs mx-auto leading-relaxed">
-              Describe your project in a few sentences and AI will write a full proposal in seconds.
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">No proposals yet</h3>
+            <p className="text-slate-600 text-sm mb-8 max-w-xs mx-auto leading-relaxed">
+              Describe the project in a few sentences and get a full draft in seconds.
             </p>
-            <Button asChild className="bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-400/20 shadow-[0_0_20px_-5px_rgb(79,70,229,0.5)] rounded-xl h-11 px-6 transition-all hover:-translate-y-0.5">
+            <Button asChild className="bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-400/20 shadow-sm rounded-xl h-11 px-6 transition-all hover:-translate-y-0.5">
               <Link href="/proposals/new">
-                <Sparkles className="w-4 h-4" />
+                <FilePlus className="w-4 h-4" />
                 Generate your first proposal
               </Link>
             </Button>
