@@ -11,6 +11,7 @@ import {
   Eye, Edit2, Copy as CopyIcon2, Mail, Loader2
 } from "lucide-react";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 type Proposal = Database["public"]["Tables"]["proposals"]["Row"];
 
@@ -103,35 +104,35 @@ function FollowUpDialog({ proposalId, onClose }: FollowUpDialogProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-slate-900 text-lg">AI Follow-Up Email</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-xl leading-none">×</button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl max-w-lg w-full p-6" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="font-bold text-white text-lg">AI Follow-Up Email</h3>
+          <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors text-xl leading-none w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10">×</button>
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-12 gap-3 text-slate-500">
-            <Loader2 className="w-5 h-5 animate-spin" />
+          <div className="flex items-center justify-center py-12 gap-3 text-slate-400">
+            <Loader2 className="w-5 h-5 animate-spin text-indigo-400" />
             <span className="text-sm">Generating with AI...</span>
           </div>
         ) : data ? (
           <>
-            <div className="mb-3">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Subject</p>
-              <p className="text-sm text-slate-700 font-medium">{data.subject}</p>
+            <div className="mb-4 bg-white/5 rounded-xl p-4 border border-white/5">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Subject</p>
+              <p className="text-sm text-white font-medium">{data.subject}</p>
             </div>
-            <div className="mb-5">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Body</p>
-              <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{data.body}</p>
+            <div className="mb-5 bg-white/5 rounded-xl p-4 border border-white/5">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Body</p>
+              <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{data.body}</p>
             </div>
             <div className="flex gap-2">
-              <Button onClick={copyAll} className="flex-1 h-9 text-sm gap-2">
+              <Button onClick={copyAll} className="flex-1 h-9 text-sm gap-2 bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-400/20 rounded-xl">
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                 {copied ? "Copied!" : "Copy email"}
               </Button>
               {data.clientEmail && (
-                <Button variant="outline" asChild className="h-9 text-sm gap-2">
+                <Button variant="outline" asChild className="h-9 text-sm gap-2 bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white rounded-xl">
                   <a href={`mailto:${data.clientEmail}?subject=${encodeURIComponent(data.subject)}&body=${encodeURIComponent(data.body)}`}>
                     <Mail className="w-4 h-4" />
                     Open in mail
@@ -193,26 +194,33 @@ export function ProposalCard({ proposal, appUrl }: ProposalCardProps) {
       {showFollowUp && (
         <FollowUpDialog proposalId={proposal.id} onClose={() => setShowFollowUp(false)} />
       )}
-      <div className={`bg-white rounded-2xl border border-l-[3px] border-slate-100 ${LEFT_ACCENT[proposal.status]} shadow-sm hover:shadow-md transition-all duration-200 group`}>
+      <motion.div
+        layout
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ scale: 1.003, y: -2 }}
+        transition={{ duration: 0.2 }}
+        className={`bg-slate-900/60 backdrop-blur-md rounded-2xl border border-l-[4px] border-white/8 ${LEFT_ACCENT[proposal.status]} shadow-lg hover:shadow-[0_8px_40px_rgba(0,0,0,0.3)] transition-all duration-300 group`}
+      >
         <div className="p-5">
           <div className="flex items-start gap-4">
             <ClientAvatar name={proposal.client_name} status={proposal.status} />
 
             <div className="flex-1 min-w-0">
               {/* Top row */}
-              <div className="flex items-start justify-between gap-4 mb-0.5">
+              <div className="flex items-start justify-between gap-4 mb-1">
                 <div className="min-w-0">
-                  <h3 className="font-semibold text-slate-900 truncate text-[15px] leading-snug">
+                  <h3 className="font-bold text-white truncate text-[16px] tracking-tight">
                     {proposal.title}
                   </h3>
-                  <p className="text-sm text-slate-500 mt-0.5 truncate">
-                    {proposal.client_name}
-                    <span className="mx-2 text-slate-200">·</span>
-                    <span className="text-slate-400">{proposal.client_email}</span>
+                  <p className="text-sm text-slate-500 mt-0.5 truncate flex items-center gap-2">
+                    <span className="font-medium text-slate-300">{proposal.client_name}</span>
+                    <span className="w-1 h-1 rounded-full bg-slate-600" />
+                    <span>{proposal.client_email}</span>
                   </p>
                 </div>
-                <div className="flex items-center gap-2.5 shrink-0">
-                  <span className="text-xl font-bold text-slate-900 tabular-nums">
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-xl font-extrabold text-white tabular-nums tracking-tight">
                     {formatCurrency(proposal.amount)}
                   </span>
                   <StatusBadge status={proposal.status} expiresAt={proposal.expires_at} />
@@ -220,52 +228,52 @@ export function ProposalCard({ proposal, appUrl }: ProposalCardProps) {
               </div>
 
               {/* Pipeline progress */}
-              <div className="mt-4 mb-3">
+              <div className="mt-5 mb-4">
                 <Pipeline status={proposal.status} expiresAt={proposal.expires_at} />
               </div>
 
               {/* Meta row */}
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <span className="inline-flex items-center gap-1 text-[11px] text-slate-400">
-                    <Calendar className="w-3 h-3" />
+              <div className="flex items-center justify-between gap-2 mt-4 pt-4 border-t border-white/5">
+                <div className="flex items-center gap-4 flex-wrap">
+                  <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-slate-500">
+                    <Calendar className="w-3.5 h-3.5" />
                     {formatDate(proposal.created_at)}
                   </span>
                   {proposal.view_count > 0 && (
-                    <span className="inline-flex items-center gap-1 text-[11px] text-slate-400">
-                      <Eye className="w-3 h-3" />
+                    <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-slate-500 bg-white/5 px-2 py-0.5 rounded-md border border-white/5">
+                      <Eye className="w-3.5 h-3.5" />
                       {proposal.view_count} {proposal.view_count === 1 ? "view" : "views"}
                     </span>
                   )}
                   {proposal.expires_at && !expired && (
-                    <span className="inline-flex items-center gap-1 text-[11px] text-slate-400">
-                      <Clock className="w-3 h-3" />
+                    <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-slate-500">
+                      <Clock className="w-3.5 h-3.5" />
                       Expires {formatDate(proposal.expires_at)}
                     </span>
                   )}
                   {proposal.signed_at && (
-                    <span className="inline-flex items-center gap-1 text-[11px] text-violet-600 font-medium">
+                    <span className="inline-flex items-center gap-1.5 text-[12px] text-violet-400 font-bold bg-violet-500/10 px-2 py-0.5 rounded-md border border-violet-500/20">
                       Signed {formatDate(proposal.signed_at)}
                     </span>
                   )}
                   {proposal.paid_at && (
-                    <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 font-medium">
-                      <DollarSign className="w-3 h-3" />
+                    <span className="inline-flex items-center gap-1.5 text-[12px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                      <DollarSign className="w-3.5 h-3.5" />
                       Paid {formatDate(proposal.paid_at)}
                     </span>
                   )}
                 </div>
 
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   {canEdit && (
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => router.push(`/proposals/${proposal.id}/edit`)}
-                      className="h-7 px-2.5 text-xs text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                      className="h-8 px-3 text-xs font-medium text-slate-400 hover:text-white hover:bg-white/10 transition-colors rounded-lg"
                     >
-                      <Edit2 className="w-3.5 h-3.5" />
-                      <span className="ml-1">Edit</span>
+                      <Edit2 className="w-3.5 h-3.5 mr-1.5" />
+                      Edit
                     </Button>
                   )}
                   {canFollowUp && (
@@ -273,10 +281,10 @@ export function ProposalCard({ proposal, appUrl }: ProposalCardProps) {
                       variant="ghost"
                       size="sm"
                       onClick={() => setShowFollowUp(true)}
-                      className="h-7 px-2.5 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                      className="h-8 px-3 text-xs font-medium text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 transition-colors rounded-lg"
                     >
-                      <Mail className="w-3.5 h-3.5" />
-                      <span className="ml-1">Follow-up</span>
+                      <Mail className="w-3.5 h-3.5 mr-1.5" />
+                      Follow-up
                     </Button>
                   )}
                   <Button
@@ -284,28 +292,28 @@ export function ProposalCard({ proposal, appUrl }: ProposalCardProps) {
                     size="sm"
                     onClick={duplicate}
                     disabled={duplicating}
-                    className="h-7 px-2.5 text-xs text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                    className="h-8 px-3 text-xs font-medium text-slate-400 hover:text-white hover:bg-white/10 transition-colors rounded-lg"
                   >
-                    {duplicating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CopyIcon2 className="w-3.5 h-3.5" />}
-                    <span className="ml-1">Duplicate</span>
+                    {duplicating ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <CopyIcon2 className="w-3.5 h-3.5 mr-1.5" />}
+                    Duplicate
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={copyLink}
-                    className="h-7 px-2.5 text-xs text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                    className="h-8 px-3 text-xs font-medium text-slate-400 hover:text-white hover:bg-white/10 transition-colors rounded-lg"
                   >
-                    {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span className="ml-1">{copied ? "Copied" : "Copy link"}</span>
+                    {copied ? <Check className="w-3.5 h-3.5 mr-1.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 mr-1.5" />}
+                    <span className={copied ? "text-emerald-400" : ""}>{copied ? "Copied" : "Copy link"}</span>
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 w-7 p-0 text-slate-400 hover:text-slate-900 hover:bg-slate-50"
+                    className="h-8 w-8 p-0 text-slate-400 hover:text-white hover:bg-white/10 transition-colors rounded-lg"
                     asChild
                   >
                     <a href={proposalUrl} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="w-3.5 h-3.5" />
+                      <ExternalLink className="w-4 h-4" />
                     </a>
                   </Button>
                 </div>
@@ -313,7 +321,8 @@ export function ProposalCard({ proposal, appUrl }: ProposalCardProps) {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </>
   );
 }
+

@@ -17,13 +17,16 @@ interface StatCardProps {
 
 function StatCard({ label, value, sub, gradient, textColor }: StatCardProps) {
   return (
-    <div className={`rounded-2xl p-6 ${gradient} relative overflow-hidden`}>
-      <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(ellipse_at_top_right,_white_0%,_transparent_60%)]" />
-      <p className={`text-xs font-semibold uppercase tracking-widest mb-3 ${textColor} opacity-80`}>
-        {label}
-      </p>
-      <p className={`text-3xl font-bold ${textColor} leading-none mb-1`}>{value}</p>
-      <p className={`text-xs ${textColor} opacity-60 mt-2`}>{sub}</p>
+    <div className={`rounded-2xl p-6 ${gradient} relative overflow-hidden border border-white/10 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300`}>
+      <div className="absolute inset-0 opacity-[0.08] bg-[radial-gradient(circle_at_top_right,_white_0%,_transparent_60%)] mix-blend-overlay" />
+      <div className="absolute inset-0 bg-white/5 backdrop-blur-[1px]" />
+      <div className="relative z-10">
+        <p className={`text-[11px] font-bold uppercase tracking-[0.2em] mb-3 ${textColor} opacity-90`}>
+          {label}
+        </p>
+        <p className={`text-4xl font-extrabold tracking-tight ${textColor} leading-none mb-1 drop-shadow-sm`}>{value}</p>
+        <p className={`text-[13px] ${textColor} opacity-70 mt-2 font-medium`}>{sub}</p>
+      </div>
     </div>
   );
 }
