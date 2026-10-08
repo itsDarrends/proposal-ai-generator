@@ -65,7 +65,8 @@ Investment Amount: $${params.amount.toLocaleString()}
 Project Description:
 ${params.description}`;
 
-  const MODELS = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"];
+  // "-latest" aliases track Google's current models, so retirements don't break generation
+  const MODELS = ["gemini-flash-latest", "gemini-3.5-flash", "gemini-flash-lite-latest"];
 
   let text: string = "";
   let quotaHit = false;
