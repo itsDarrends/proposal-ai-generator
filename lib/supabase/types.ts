@@ -12,7 +12,11 @@ export interface ProposalContent {
   nextSteps: string;
 }
 
-export interface Database {
+/**
+ * Hand-maintained to match supabase/migrations. To regenerate from the live schema:
+ *   npm run types:gen   (needs `npx supabase login` and `npx supabase link` first; writes types.generated.ts to diff against this file)
+ */
+export type Database = {
   public: {
     Tables: {
       profiles: {
@@ -46,6 +50,7 @@ export interface Database {
           company_logo_url?: string | null;
           brand_color?: string | null;
         };
+        Relationships: [];
       };
       proposals: {
         Row: {
@@ -66,6 +71,8 @@ export interface Database {
           created_at: string;
           updated_at: string;
           view_count: number;
+          last_sent_at: string | null;
+          send_count: number;
         };
         Insert: {
           id?: string;
@@ -85,6 +92,8 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
           view_count?: number;
+          last_sent_at?: string | null;
+          send_count?: number;
         };
         Update: {
           id?: string;
@@ -104,11 +113,23 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
           view_count?: number;
+          last_sent_at?: string | null;
+          send_count?: number;
         };
+        Relationships: [
+          {
+            foreignKeyName: "proposals_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
     Enums: Record<string, never>;
+    CompositeTypes: Record<string, never>;
   };
 }

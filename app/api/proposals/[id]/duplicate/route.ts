@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
-import type { Database } from "@/lib/supabase/types";
 
 export const dynamic = "force-dynamic";
-
-type Proposal = Database["public"]["Tables"]["proposals"]["Row"];
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -17,14 +14,13 @@ export async function POST(request: Request, { params }: Params) {
 
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data: raw } = await supabase
+  const { data: proposal } = await supabase
     .from("proposals")
     .select("*")
     .eq("id", id)
     .eq("user_id", user.id)
     .single();
 
-  const proposal = raw as Proposal | null;
   if (!proposal) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const expiresAt = new Date();

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
-import { generateProposalContent } from "@/lib/anthropic";
+import { generateProposalContent } from "@/lib/gemini";
+import { checkGenerateRateLimit } from "@/lib/rate-limit";
+import { checkClientEmail } from "@/lib/email-validation";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +18,16 @@ export async function POST(request: Request) {
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Per-user cap so one account can't burn the shared free-tier AI quota
+    const limit = await checkGenerateRateLimit(supabase, user.id);
+    if (!limit.allowed) {
+      const minutes = Math.ceil(limit.retryAfterSeconds / 60);
+      return NextResponse.json(
+        { error: `You've generated a lot of proposals recently. Please try again in about ${minutes} minute${minutes === 1 ? "" : "s"}.` },
+        { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } }
+      );
     }
 
     const body = await request.json();
@@ -41,15 +53,17 @@ export async function POST(request: Request) {
     const parsedExpiry = Number(expiryDays) || 30;
     const clampedExpiry = Math.min(Math.max(Math.floor(parsedExpiry), 1), 365);
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(String(clientEmail))) {
-      return NextResponse.json({ error: "Invalid client email" }, { status: 400 });
+    // Format, typo ("gmial.com"), throwaway-domain and can-this-domain-receive-mail checks,
+    // before we spend an AI call. The cleaned, lower-cased address is what gets stored.
+    const emailCheck = await checkClientEmail(String(clientEmail));
+    if (!emailCheck.ok) {
+      return NextResponse.json({ error: emailCheck.message, suggestion: emailCheck.suggestion }, { status: 400 });
     }
 
     const content = await generateProposalContent({
       title: title.trim(),
       clientName: String(clientName).trim(),
-      clientEmail: String(clientEmail).trim(),
+      clientEmail: emailCheck.email,
       description: description.trim(),
       amount: parsedAmount,
     });
@@ -63,7 +77,7 @@ export async function POST(request: Request) {
         user_id: user.id,
         title: title.trim(),
         client_name: String(clientName).trim(),
-        client_email: String(clientEmail).trim(),
+        client_email: emailCheck.email,
         content,
         amount: parsedAmount,
         status: "draft",

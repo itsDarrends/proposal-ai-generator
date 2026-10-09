@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
-import type { ProposalContent } from "@/lib/supabase/types";
+import { patchProposalSchema } from "@/lib/schemas";
+import { canOwnerTransition, isImmutable } from "@/lib/proposal-rules";
 
 export const dynamic = "force-dynamic";
 
@@ -15,20 +16,57 @@ export async function PATCH(request: Request, { params }: Params) {
 
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const body = await request.json();
-  const { content, status } = body as { content?: ProposalContent; status?: string };
+  const parsed = patchProposalSchema.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid proposal data" }, { status: 400 });
+  }
+  const { content, status } = parsed.data;
 
-  const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
-  if (content) update.content = content;
-  if (status) update.status = status;
-
-  // eslint-disable-next-line
-  const { error } = await (supabase.from("proposals") as any)
-    .update(update)
+  const { data: current } = await supabase
+    .from("proposals")
+    .select("status")
     .eq("id", id)
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .single();
+
+  if (!current) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  if (isImmutable(current.status)) {
+    return NextResponse.json(
+      { error: "Signed or paid proposals can no longer be edited" },
+      { status: 409 }
+    );
+  }
+
+  if (status && !canOwnerTransition(current.status, status)) {
+    return NextResponse.json(
+      { error: `A proposal can't move from "${current.status}" to "${status}"` },
+      { status: 409 }
+    );
+  }
+
+  // Conditional on the status we just read, so a client signing at the same moment
+  // can't be overwritten by this edit.
+  const { data: updated, error } = await supabase
+    .from("proposals")
+    .update({
+      updated_at: new Date().toISOString(),
+      ...(content ? { content } : {}),
+      ...(status ? { status } : {}),
+    })
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .eq("status", current.status)
+    .select("id");
 
   if (error) return NextResponse.json({ error: "Failed to update" }, { status: 500 });
+
+  if (!updated?.length) {
+    return NextResponse.json(
+      { error: "This proposal just changed. Reload and try again." },
+      { status: 409 }
+    );
+  }
 
   return NextResponse.json({ ok: true });
 }

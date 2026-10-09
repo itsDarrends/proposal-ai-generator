@@ -1,9 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import { createServerClient, createServiceClient } from "@/lib/supabase/server";
 import { ProposalEditForm } from "@/components/dashboard/ProposalEditForm";
-import type { Database } from "@/lib/supabase/types";
-
-type Proposal = Database["public"]["Tables"]["proposals"]["Row"];
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -16,14 +13,13 @@ export default async function EditProposalPage({ params }: Props) {
   if (!user) redirect("/login");
 
   const service = await createServiceClient();
-  const { data: raw } = await service
+  const { data: proposal } = await service
     .from("proposals")
     .select("*")
     .eq("id", id)
     .eq("user_id", user.id)
     .single();
 
-  const proposal = raw as Proposal | null;
   if (!proposal) notFound();
 
   if (proposal.status !== "draft" && proposal.status !== "sent") {

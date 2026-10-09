@@ -10,12 +10,16 @@ export async function GET(request: Request) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && data.user) {
-      // Upsert profile
-      await supabase.from("profiles").upsert({
-        id: data.user.id,
-        email: data.user.email!,
-        full_name: data.user.user_metadata?.full_name ?? null,
-      });
+      // Make sure a profile row exists. The signup trigger normally creates it; never
+      // overwrite an existing row (it holds role and branding), so conflicts are ignored.
+      await supabase.from("profiles").upsert(
+        {
+          id: data.user.id,
+          email: data.user.email!,
+          full_name: data.user.user_metadata?.full_name ?? null,
+        },
+        { onConflict: "id", ignoreDuplicates: true }
+      );
 
       return NextResponse.redirect(`${origin}/dashboard`);
     }

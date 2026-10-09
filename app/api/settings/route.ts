@@ -22,8 +22,8 @@ export async function PATCH(request: Request) {
   const { company_name, company_logo_url, brand_color } = await request.json();
 
   const service = await createServiceClient();
-  // eslint-disable-next-line
-  const { error } = await (service.from("profiles") as any)
+  const { error } = await service
+    .from("profiles")
     .update({ company_name, company_logo_url, brand_color })
     .eq("id", user.id);
 

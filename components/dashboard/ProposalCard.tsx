@@ -8,7 +8,7 @@ import { formatCurrency, formatDate, isExpired } from "@/lib/utils";
 import type { Database, ProposalStatus } from "@/lib/supabase/types";
 import {
   Copy, ExternalLink, Check, Clock, DollarSign, Calendar,
-  Eye, Edit2, Copy as CopyIcon2, Mail, Loader2
+  Eye, Edit2, Copy as CopyIcon2, Mail, Loader2, Send
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -157,18 +157,79 @@ export function ProposalCard({ proposal, appUrl }: ProposalCardProps) {
   const [copied, setCopied] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
   const [showFollowUp, setShowFollowUp] = useState(false);
+  const [confirmingSend, setConfirmingSend] = useState(false);
+  const [sending, setSending] = useState(false);
   const proposalUrl = `${appUrl}/proposal/${proposal.id}`;
   const expired = isExpired(proposal.expires_at) &&
     proposal.status !== "signed" && proposal.status !== "paid";
 
   const canEdit = proposal.status === "draft" || proposal.status === "sent";
   const canFollowUp = proposal.status === "viewed" || proposal.status === "signed";
+  const canSend = !expired && ["draft", "sent", "viewed"].includes(proposal.status);
+
+  // Sharing the link is what moves a draft to "sent" (see CLAUDE.md status flow).
+  function markSent() {
+    if (proposal.status !== "draft") return;
+    fetch(`/api/proposals/${proposal.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "sent" }),
+    })
+      .then((res) => {
+        if (res.ok) router.refresh();
+      })
+      .catch(() => {});
+  }
 
   async function copyLink() {
     await navigator.clipboard.writeText(proposalUrl);
     setCopied(true);
     toast.success("Link copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
+    markSent();
+  }
+
+  // Emails the proposal link to the address saved on the proposal. The server
+  // re-validates the address and enforces a cooldown and a per-proposal cap.
+  async function sendToClient() {
+    setSending(true);
+    try {
+      const res = await fetch(`/api/proposals/${proposal.id}/send`, { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(data.error ?? "Couldn't send the proposal");
+        return;
+      }
+      toast.success(`Proposal sent to ${data.sentTo ?? proposal.client_email}`);
+      setConfirmingSend(false);
+      router.refresh();
+    } catch {
+      toast.error("Couldn't send the proposal");
+    } finally {
+      setSending(false);
+    }
+  }
+
+  // Works with no email setup: opens a Gmail compose window; you press send yourself.
+  function openInGmail() {
+    const subject = `Proposal: ${proposal.title}`;
+    const body = [
+      `Hi ${proposal.client_name},`,
+      "",
+      `Here is the proposal for "${proposal.title}":`,
+      proposalUrl,
+      "",
+      "You can read, sign and pay on that page. Let me know if you have any questions.",
+      "",
+      "Thanks",
+    ].join(String.fromCharCode(10));
+    const url =
+      "https://mail.google.com/mail/?view=cm&fs=1" +
+      `&to=${encodeURIComponent(proposal.client_email)}` +
+      `&su=${encodeURIComponent(subject)}` +
+      `&body=${encodeURIComponent(body)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+    markSent();
   }
 
   async function duplicate() {
@@ -264,7 +325,52 @@ export function ProposalCard({ proposal, appUrl }: ProposalCardProps) {
                   )}
                 </div>
 
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <div className={`flex items-center gap-1 transition-opacity duration-200 ${confirmingSend ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}>
+                  {canSend && (confirmingSend ? (
+                    <div className="flex items-center gap-1 rounded-lg bg-indigo-50 border border-indigo-200 pl-3 pr-1 py-0.5">
+                      <span className="text-xs text-slate-700 max-w-[220px] truncate">
+                        Send to <strong>{proposal.client_email}</strong>?
+                      </span>
+                      <Button
+                        size="sm"
+                        onClick={sendToClient}
+                        disabled={sending}
+                        className="h-7 px-2.5 text-xs bg-indigo-600 hover:bg-indigo-700 text-white rounded-md"
+                      >
+                        {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Send"}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setConfirmingSend(false)}
+                        disabled={sending}
+                        className="h-7 px-2 text-xs text-slate-600 hover:text-slate-900 rounded-md"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setConfirmingSend(true)}
+                        className="h-8 px-3 text-xs font-medium text-indigo-700 hover:text-indigo-800 hover:bg-indigo-50 transition-colors rounded-lg"
+                      >
+                        <Send className="w-3.5 h-3.5 mr-1.5" />
+                        Send to client
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={openInGmail}
+                        className="h-8 px-3 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors rounded-lg"
+                      >
+                        <Mail className="w-3.5 h-3.5 mr-1.5" />
+                        Gmail draft
+                      </Button>
+                    </>
+                  ))}
                   {canEdit && (
                     <Button
                       variant="ghost"

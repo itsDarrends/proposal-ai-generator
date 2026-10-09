@@ -4,22 +4,19 @@ import { StatsBar } from "@/components/dashboard/StatsBar";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { FilePlus, FileText } from "lucide-react";
-import type { Database } from "@/lib/supabase/types";
 import { isExpired } from "@/lib/utils";
-
-type Proposal = Database["public"]["Tables"]["proposals"]["Row"];
 
 export default async function DashboardPage() {
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: rawProposals } = await supabase
+  const { data: fetched } = await supabase
     .from("proposals")
     .select("*")
     .eq("user_id", user!.id)
     .order("created_at", { ascending: false });
 
-  const proposals = (rawProposals ?? []) as Proposal[];
+  const proposals = fetched ?? [];
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
   const totalRevenue = proposals

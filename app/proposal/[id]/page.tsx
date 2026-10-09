@@ -3,10 +3,9 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { isExpired } from "@/lib/utils";
 import { ProposalContent } from "@/components/proposal/ProposalContent";
 import { ProposalClientShell } from "@/components/proposal/ProposalClientShell";
+import { ViewTracker } from "@/components/proposal/ViewTracker";
+import { isMockPaymentEnabled } from "@/lib/mock-payment";
 import { Clock } from "lucide-react";
-import type { Database } from "@/lib/supabase/types";
-
-type Proposal = Database["public"]["Tables"]["proposals"]["Row"];
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -16,32 +15,24 @@ export default async function ProposalPage({ params }: Props) {
   const { id } = await params;
   const supabase = await createServiceClient();
 
-  const { data: rawProposal } = await supabase
+  const { data: proposal } = await supabase
     .from("proposals")
     .select("*")
     .eq("id", id)
     .single();
 
-  const proposal = rawProposal as Proposal | null;
-
   if (!proposal) {
     notFound();
   }
 
-  // Track view count on every visit (fire and forget)
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
-  fetch(`${appUrl}/api/proposals/${id}/view`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-  }).catch(() => {});
 
   // Fetch creator branding
-  const { data: rawProfile } = await supabase
+  const { data: profile } = await supabase
     .from("profiles")
     .select("company_name, company_logo_url, brand_color")
     .eq("id", proposal.user_id)
     .single();
-  const profile = rawProfile as { company_name: string | null; company_logo_url: string | null; brand_color: string | null } | null;
 
   const expired = isExpired(proposal.expires_at) &&
     proposal.status !== "signed" &&
@@ -63,12 +54,11 @@ export default async function ProposalPage({ params }: Props) {
     );
   }
 
-  const mockPayment = process.env.MOCK_PAYMENT === "true";
+  const mockPayment = isMockPaymentEnabled();
 
   return (
     <div className="min-h-screen bg-white text-slate-700 relative overflow-hidden selection:bg-indigo-500/30">
-      {/* Background ambient lighting */}
-      
+      <ViewTracker proposalId={proposal.id} />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
         <ProposalContent
           content={proposal.content}

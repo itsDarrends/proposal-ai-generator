@@ -1,8 +1,71 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { ProposalContent } from "@/lib/supabase/types";
+import { proposalContentSchema } from "@/lib/schemas";
 
 function getGemini() {
   return new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
+}
+
+// Netlify kills functions after ~10s, so only fast non-"thinking" lite models fit (~6s).
+// "-latest" aliases track Google's current model, so retirements don't break generation.
+// (gemini-2.0-flash and gemini-1.5-* were retired and now return 404.)
+export const GEMINI_MODELS = ["gemini-flash-lite-latest", "gemini-3.1-flash-lite"];
+const TIME_BUDGET_MS = 8500;
+const MIN_ATTEMPT_MS = 3000;
+
+/**
+ * Run a prompt through the model list with a shared time budget, falling back to the
+ * next model on errors. Throws an Error whose message is safe to show to the user.
+ */
+export async function runGemini(params: {
+  prompt: string;
+  systemInstruction?: string;
+  json?: boolean;
+}): Promise<string> {
+  const deadline = Date.now() + TIME_BUDGET_MS;
+  let quotaHit = false;
+  let timedOut = false;
+
+  for (const modelName of GEMINI_MODELS) {
+    const remaining = deadline - Date.now();
+    if (remaining < MIN_ATTEMPT_MS) break;
+
+    try {
+      const model = getGemini().getGenerativeModel(
+        {
+          model: modelName,
+          systemInstruction: params.systemInstruction,
+          generationConfig: params.json ? { responseMimeType: "application/json" } : undefined,
+        },
+        { timeout: remaining }
+      );
+      const result = await model.generateContent(params.prompt);
+      const text = result.response.text();
+      if (text?.trim()) return text;
+    } catch (err: unknown) {
+      const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
+      console.error(`[Gemini ${modelName}] error:`, err instanceof Error ? err.message : err);
+
+      if (msg.includes("api_key") || msg.includes("api key") || msg.includes("403") || msg.includes("permission_denied")) {
+        throw new Error("Invalid Google AI API key. Check GOOGLE_AI_API_KEY in your environment variables.");
+      }
+      if (msg.includes("quota") || msg.includes("resource_exhausted") || msg.includes("429") || msg.includes("rate limit") || msg.includes("too many")) {
+        quotaHit = true;
+      }
+      if (msg.includes("abort") || msg.includes("timeout") || msg.includes("timed out")) {
+        timedOut = true;
+      }
+      // 404 = model not available for this key; any other error: try the next model
+    }
+  }
+
+  throw new Error(
+    quotaHit
+      ? "Your Google AI free-tier quota is exhausted for today. It resets at midnight Pacific time. Check your usage at aistudio.google.com."
+      : timedOut
+      ? "The AI took too long to respond. Please try again — shorter descriptions generate faster."
+      : "AI generation failed. Please try again in a moment."
+  );
 }
 
 const SYSTEM_PROMPT = `You are an expert business proposal writer. Given a project description and client details, you will generate a professional, compelling proposal in JSON format.
@@ -65,70 +128,46 @@ Investment Amount: $${params.amount.toLocaleString()}
 Project Description:
 ${params.description}`;
 
-  // Netlify kills functions after ~10s, so only fast non-"thinking" lite models fit (~6s).
-  // "-latest" alias tracks Google's current model, so retirements don't break generation.
-  const MODELS = ["gemini-flash-lite-latest", "gemini-3.1-flash-lite"];
-  const deadline = Date.now() + 8500;
-
-  let text: string = "";
-  let quotaHit = false;
-  let timedOut = false;
-
-  for (const modelName of MODELS) {
-    const remaining = deadline - Date.now();
-    if (remaining < 3000) break;
-    try {
-      const model = getGemini().getGenerativeModel(
-        {
-          model: modelName,
-          systemInstruction: SYSTEM_PROMPT,
-          generationConfig: { responseMimeType: "application/json" },
-        },
-        { timeout: remaining }
-      );
-      const result = await model.generateContent(userMessage);
-      text = result.response.text();
-      break;
-    } catch (err: unknown) {
-      const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
-      console.error(`[Gemini ${modelName}] error:`, err instanceof Error ? err.message : err);
-
-      if (msg.includes("api_key") || msg.includes("api key") || msg.includes("403") || msg.includes("permission_denied")) {
-        throw new Error("Invalid Google AI API key. Check GOOGLE_AI_API_KEY in your environment variables.");
-      }
-
-      if (msg.includes("quota") || msg.includes("resource_exhausted") || msg.includes("429") || msg.includes("rate limit") || msg.includes("too many")) {
-        quotaHit = true;
-      }
-
-      if (msg.includes("abort") || msg.includes("timeout") || msg.includes("timed out")) {
-        timedOut = true;
-      }
-
-      // 404 = model not available for this key — skip silently
-      // All other errors — try next model
-    }
-  }
-
-  if (!text?.trim()) {
-    throw new Error(
-      quotaHit
-        ? "Your Google AI free-tier quota is exhausted for today. It resets at midnight Pacific time. Check your usage at aistudio.google.com."
-        : timedOut
-        ? "The AI took too long to respond. Please try again — shorter descriptions generate faster."
-        : "AI generation failed. Please try again in a moment."
-    );
-  }
-
-  if (!text?.trim()) {
-    throw new Error("AI returned an empty response. Please try again.");
-  }
+  const text = await runGemini({
+    prompt: userMessage,
+    systemInstruction: SYSTEM_PROMPT,
+    json: true,
+  });
 
   const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
 
+  let raw: unknown;
   try {
-    return JSON.parse(cleaned) as ProposalContent;
+    raw = JSON.parse(cleaned);
   } catch {
     throw new Error("AI returned an unexpected format. Please try again.");
   }
+
+  const parsed = proposalContentSchema.safeParse(raw);
+  if (!parsed.success) {
+    console.error("[Gemini] response failed validation:", parsed.error.issues.slice(0, 3));
+    throw new Error("AI returned an incomplete proposal. Please try again.");
+  }
+  return parsed.data;
+}
+
+export async function generateFollowUpEmail(params: {
+  title: string;
+  clientName: string;
+  amount: number;
+  daysSinceViewed: number;
+}): Promise<string> {
+  const prompt = `Write a short, warm, non-pushy follow-up email from a freelancer/agency to a client who has viewed but not yet signed a proposal.
+
+Proposal title: "${params.title}"
+Client name: ${params.clientName}
+Investment amount: $${Number(params.amount).toLocaleString()}
+Days since viewed: ${params.daysSinceViewed}
+
+Write ONLY the email body (no subject line, no "Dear X" header — start from the first sentence).
+Keep it under 100 words. Mention the proposal title naturally. End with a soft call to action.
+Do not use generic phrases like "I hope this email finds you well."
+Sound human, specific, and confident — not desperate.`;
+
+  return (await runGemini({ prompt })).trim();
 }
